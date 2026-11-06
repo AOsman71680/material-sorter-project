@@ -1,0 +1,7 @@
+# Serial settings for the STM32. Fill in the values after the = sign.
+# port: the COM port the STM32 is on, for example COM3
+# baud: the speed agreed with the STM32, for example 115200
+# ack_timeout: seconds to wait for the STM32 reply (optional, default 2)
+port = 
+baud = 
+ack_timeout = 2

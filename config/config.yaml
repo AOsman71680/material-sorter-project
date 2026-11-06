@@ -1,0 +1,78 @@
+# AI material sorter configuration.
+#
+# Every key below is required. Unknown keys and invalid values are rejected
+# at load time instead of being silently replaced with defaults.
+#
+# Relative paths are resolved against the project root (the folder that
+# contains the "config" directory).
+
+# Exactly these four material classes. Their order defines the model's
+# output label indices, so do not reorder after training a model.
+# "uncertain" is an internal runtime state, NOT a class.
+classes: [metal, plastic, paper, other]
+
+# Class -> cup ID. Every class needs its own unique positive integer.
+cups:
+  metal: 1
+  plastic: 2
+  paper: 3
+  other: 4
+
+paths:
+  dataset_dir: data/dataset
+  model_dir: models
+
+# Dataset preparation files (written by `python -m src.prepare_dataset`).
+# None of these may be inside paths.dataset_dir, so raw images and generated
+# files never mix.
+dataset:
+  # Optional grouping metadata CSV: one row per image with a `path` column
+  # (relative to dataset_dir), a required `object_id` column and an optional
+  # `session_id` column. If the file is missing, splitting still works but
+  # leakage prevention is disabled and the report says so.
+  group_metadata: data/group_metadata.csv
+  manifest: data/splits/manifest.csv
+  report: data/splits/split_report.txt
+
+image:
+  width: 224
+  height: 224
+
+# Training-only augmentation (src/preprocessing.py). Validation and test
+# images are never augmented.
+augmentation:
+  max_rotation_degrees: 10.0   # random rotation in [-x, +x]
+  max_translation: 0.05        # random shift as a fraction of image size, in [-x, +x]
+  min_scale: 0.9               # random zoom factor range
+  max_scale: 1.1
+  brightness: 0.15             # brightness multiplier in [1-x, 1+x]
+  contrast: 0.15               # contrast multiplier in [1-x, 1+x]
+
+# Train/validation/test split. Each ratio must be in (0, 1) and sum to 1.
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+
+random_seed: 42
+
+training:
+  batch_size: 32
+  epochs: 30
+  learning_rate: 0.001
+  weight_decay: 0.0001           # AdamW weight decay, in [0, 1)
+  early_stopping_patience: 5     # stop after this many epochs without a lower validation loss
+  num_workers: 0                 # data-loading processes; 0 is safest on Windows
+  device: auto                   # auto, cpu, or cuda
+  pretrained: true               # start from ImageNet weights (needs a one-time download)
+
+model:
+  # One of: mobilenet_v3_small, mobilenet_v2, efficientnet_b0, resnet18
+  architecture: mobilenet_v3_small
+
+inference:
+  # Strictly between 0 and 1. Predictions below this are "uncertain".
+  confidence_threshold: 0.70
+
+camera:
+  index: 1
